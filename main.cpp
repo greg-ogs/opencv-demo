@@ -17,19 +17,22 @@ static void help(char ** argv)
         << argv[0] << " [image_name -- default image.jpg]" << endl << endl;
 }
 
-int main(int argc, char ** argv)
-{
-    help(argv);
-
-    const char* filename = argc >=2 ? argv[1] : "D:/opencv-clion/image.jpg";
+static Mat init(int argc, char **argv, int* ec) {
+    const char* filename = argc >=2 ? argv[1] : "D:/opencv-demo/image.jpg";
 
     Mat I = imread( samples::findFile( filename ), IMREAD_GRAYSCALE);
     if( I.empty()){
         cout << "Error opening image" << endl;
-        return EXIT_FAILURE;
+        *ec = EXIT_FAILURE;
+        return I;
+    }else {
+        *ec = EXIT_SUCCESS;
+        return I;
     }
+}
 
-//! [expand]
+static int Fourier(Mat I) {
+    //! [expand]
     Mat padded;                            //expand input image to optimal size
     int m = getOptimalDFTSize( I.rows );
     int n = getOptimalDFTSize( I.cols ); // on the border add zero values
@@ -46,7 +49,7 @@ int main(int argc, char ** argv)
     dft(complexI, complexI);            // this way the result may fit in the source matrix
 //! [dft]
 
-    // compute the magnitude and switch to logarithmic scale
+    // compute the magnitude and switch to a logarithmic scale
     // => log(1 + sqrt(Re(DFT(I))^2 + Im(DFT(I))^2))
 //! [magnitude]
     split(complexI, planes);                   // planes[0] = Re(DFT(I), planes[1] = Im(DFT(I))
@@ -97,4 +100,17 @@ int main(int argc, char ** argv)
     waitKey();
 
     return EXIT_SUCCESS;
+}
+
+int main(int argc, char ** argv) {
+    int exit_code = EXIT_SUCCESS;
+    int* exit_c = &exit_code;
+
+    help(argv);
+
+    Mat I = init(argc, argv, exit_c);
+    cout << "Creating the Fourier transform of the image" << endl;
+    *exit_c = Fourier(I);
+
+    return *exit_c;
 }
