@@ -18,8 +18,6 @@ on:
   pull_request:
     branches: 
       - "**"
-  schedule:
-    - cron: '38 12 * * 3'
 
 jobs:
   analyze:
